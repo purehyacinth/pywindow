@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>850</width>
     <height>600</height>
    </rect>
   </property>
@@ -109,12 +109,22 @@
         <widget class="QComboBox" name="comboBox">
          <item>
           <property name="text">
-           <string>Hamming</string>
+           <string>hamming</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Hanning</string>
+           <string>flat-top</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>blackman</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>hann</string>
           </property>
          </item>
         </widget>
@@ -129,7 +139,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>850</width>
      <height>23</height>
     </rect>
    </property>

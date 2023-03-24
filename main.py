@@ -1,9 +1,11 @@
 import sys
+
+import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from untitled import Ui_MainWindow
-
+from scipy.signal import get_window
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -14,10 +16,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 创建一个字典用来保存窗口的参数
         self.window={}
         self.i = 1
+
+        self.plot_deafault()
+
         # 按钮点击创建窗
         self.pushButton.clicked.connect(self.listwidget_add)
         self.pushButton_2.clicked.connect(self.listwidget_del)
-
 
         self.listWidget.itemClicked.connect(self.listwidget_click)
         self.listWidget.itemClicked.connect(self.plot)
@@ -28,7 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def create_window(self):
         # 类型和长度默认为 Hanning 和 64
-        self.window_type="Hanning"
+        self.window_type='hann'
         self.window_length=64
 
         self.window[self.window_name]={'type':self.window_type,'length':self.window_length}
@@ -73,23 +77,55 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.window[self.window_name]={'type':self.window_type,'length':self.window_length}
         # 更新listWidget的显示
         self.listWidget.currentItem().setText(self.window_name)
-
+        # 更新图像
+        self.plot()
     def plot(self):
-        pass
+
+        window=get_window(self.window[self.window_name]['type'],int(self.window[self.window_name]['length']))
+        t=np.arange(self.window[self.window_name]['length'])
+
+
+        self.canvas1.figure.clf()
+        ax1 = self.canvas1.figure.add_subplot(111)
+        ax1.grid(True)
+        ax1.plot(t,window)
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Amplitude')
+        ax1.set_title('Time Domain')
+        self.canvas1.draw()
+
+        # 计算频域
+        fft_len = 2048
+        fft_vals = np.abs(np.fft.fft(window, fft_len)[:fft_len//2])
+
+        # 创建归一化频率轴
+        freqs = np.arange(fft_len//2) / (fft_len/2) * np.pi
+        freqs_normalized = freqs / np.pi
+
+        self.canvas2.figure.clf()
+        ax2=self.canvas2.figure.add_subplot(111)
+        ax2.plot(freqs_normalized, 20*np.log10(fft_vals + 1e-15))
+        ax2.set_xlim([0, 1])
+        ax2.set_ylim([-100, 50])
+        ax2.grid(True)
+        ax2.set_xlabel('Frequency')
+        ax2.set_ylabel('Magnitude(dB)')
+        ax2.set_title('Frequency Domain')
+        self.canvas2.draw()
 
     def plot_deafault(self):
         self.fig1 = plt.figure()
         self.canvas1 = FigureCanvas(self.fig1)
         layout = QVBoxLayout()  # 垂直布局
         layout.addWidget(self.canvas1)
+        self.fig1.subplots_adjust(left=0.15, bottom=None, right=None, top=None, wspace=None, hspace=None)
         self.graphicsView.setLayout(layout)  # 设置好布局之后调用函数
 
         self.fig2 = plt.figure()
         self.canvas2 = FigureCanvas(self.fig2)
         layout = QVBoxLayout()  # 垂直布局
         layout.addWidget(self.canvas2)
-        self.fig2.subplots_adjust(left=None, bottom=0.2, right=None, top=None, wspace=None, hspace=None)
-        self.ui.graphicsView_2.setLayout(layout)  # 设置好布局之后调用函数
+        self.graphicsView_2.setLayout(layout)  # 设置好布局之后调用函数
 
 
 if __name__ == "__main__":
