@@ -1,7 +1,7 @@
 import sys
 
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QMessageBox
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from qtpy import uic
@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         self.plot_deafault()
         self.point_num=512
         self.combo_index=0
+        self.lineEdit_2.setEnabled(False)
         # 按钮点击创建窗
         self.pushButton.clicked.connect(self.listwidget_add)
         self.pushButton_2.clicked.connect(self.listwidget_del)
@@ -62,14 +63,25 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         # 点击复制按钮复制一个窗
         self.pushButton_4.clicked.connect(self.copy_window)
 
+        # combo选中窗Kaiser后，lineEdit_2可用
+        self.comboBox.currentIndexChanged.connect(self.setting_enable)
+    def setting_enable(self):
+        if self.comboBox.currentIndex()==4:
+            self.lineEdit_2.setEnabled(True)
+            self.label_4.setText('beta')
+        else:
+            self.lineEdit_2.setEnabled(False)
+            self.lineEdit_4.setEnabled(False)
+            self.label_4.setText('Parameter')
     def apply(self):
         # 获取点数
-        self.point_num=int(self.widget.lineEdit.text())
+        self.point_num = int(self.widget.lineEdit.text())
         # 获取combo选择了第几个
-        self.combo_index=self.widget.comboBox.currentIndex()
+        self.combo_index = self.widget.comboBox.currentIndex()
         # 刷新图像(仅在选中窗口的情况下)
         if self.listWidget.currentItem():
             self.plot()
+
     def show_time(self):
         if self.actionTime_Domain.isChecked():
             self.graphicsView.show()
@@ -109,8 +121,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         self.lineEdit_3.setText('')
 
     def listwidget_click(self):
-        self.window_name=self.listWidget.currentItem().text()
 
+        self.window_name=self.listWidget.currentItem().text()
         # 选定窗口后，把窗口的参数显示在lineEdit中
         self.lineEdit.setText(self.window_name)
         # 将窗口类型显示到comboBox中
@@ -118,19 +130,35 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         # 显示长度
         self.lineEdit_3.setText(str(self.window[self.window_name]['length']))
 
-    def window_change(self):
-        # 获取lineEdit,comboBox,lineEdit_3的值,,并且更新到字典中
-        self.window_name=self.lineEdit.text()
-        self.window_type=self.comboBox.currentText()
-        self.window_length=int(self.lineEdit_3.text())
 
-        self.window[self.window_name]={'type':self.window_type,'length':self.window_length}
-        # 更新listWidget的显示
-        self.listWidget.currentItem().setText(self.window_name)
-        # 更新图像
-        self.plot()
+    def window_change(self):
+        # 当parameter可用时，一定要填入参数
+        if self.lineEdit_2.isEnabled():
+            try:
+                number=float(self.lineEdit_2.text())
+            except:
+                QMessageBox.warning(self, 'Warning', 'Please input number!', QMessageBox.Yes)
+                return
+        # 检测是否为数字参数，否则弹出窗口警告
+        if self.lineEdit.text()!='' and self.lineEdit_3.text().isdigit():
+            # 获取lineEdit,comboBox,lineEdit_3的值,,并且更新到字典中
+            self.window_name=self.lineEdit.text()
+            self.window_type=self.comboBox.currentText()
+            self.window_length=int(self.lineEdit_3.text())
+            self.window[self.window_name]={'type':self.window_type,'length':self.window_length}
+            # 更新listWidget的显示
+            self.listWidget.currentItem().setText(self.window_name)
+            # 更新图像
+            self.plot()
+        else:
+            QMessageBox.warning(self, 'Warning', 'Please input number!', QMessageBox.Yes)
     def plot(self):
-        window=get_window(self.window[self.window_name]['type'],int(self.window[self.window_name]['length']))
+        # 获取窗口的类型,如果是Kaiser，获取beta
+        if self.comboBox.currentIndex()==4:
+            window=get_window((self.window[self.window_name]['type'],float(self.lineEdit_2.text())),int(self.window[self.window_name]['length']))
+        else:
+            window=get_window(self.window[self.window_name]['type'],int(self.window[self.window_name]['length']))
+
         t=np.arange(self.window[self.window_name]['length'])
         # 计算频域
 
