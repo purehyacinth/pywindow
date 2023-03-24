@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(850, 600)
+        MainWindow.resize(850, 589)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
@@ -45,6 +45,9 @@ class Ui_MainWindow(object):
         self.pushButton = QtWidgets.QPushButton(self.groupBox_2)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
+        self.pushButton_4 = QtWidgets.QPushButton(self.groupBox_2)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.verticalLayout.addWidget(self.pushButton_4)
         self.pushButton_2 = QtWidgets.QPushButton(self.groupBox_2)
         self.pushButton_2.setObjectName("pushButton_2")
         self.verticalLayout.addWidget(self.pushButton_2)
@@ -116,6 +119,7 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(_translate("MainWindow", "Window Viewer"))
         self.groupBox.setTitle(_translate("MainWindow", "Window_list"))
         self.pushButton.setText(_translate("MainWindow", "Add_Window"))
+        self.pushButton_4.setText(_translate("MainWindow", "Copy_Window"))
         self.pushButton_2.setText(_translate("MainWindow", "Delete"))
         self.groupBox_3.setTitle(_translate("MainWindow", " Current Window Information"))
         self.label.setText(_translate("MainWindow", "Name"))

@@ -59,6 +59,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         self.actionTime_Domain.triggered.connect(self.show_time)
         self.actionFrequency_Domain_2.triggered.connect(self.show_freq)
 
+        # 点击复制按钮复制一个窗
+        self.pushButton_4.clicked.connect(self.copy_window)
+
     def apply(self):
         # 获取点数
         self.point_num=int(self.widget.lineEdit.text())
@@ -67,7 +70,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         # 刷新图像(仅在选中窗口的情况下)
         if self.listWidget.currentItem():
             self.plot()
-
     def show_time(self):
         if self.actionTime_Domain.isChecked():
             self.graphicsView.show()
@@ -85,7 +87,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         self.window_length=64
 
         self.window[self.window_name]={'type':self.window_type,'length':self.window_length}
-        print(self.window)
 
     def listwidget_add(self):
 
@@ -183,6 +184,10 @@ class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
         layout.addWidget(self.canvas2)
         self.graphicsView_2.setLayout(layout)  # 设置好布局之后调用函数
 
+    def copy_window(self):
+        if self.listWidget.currentItem():
+            self.window[self.window_name+'_copy']={'type':self.window[self.window_name]['type'],'length':self.window[self.window_name]['length']}
+            self.listWidget.addItem(self.window_name+'_copy')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
