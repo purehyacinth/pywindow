@@ -1,24 +1,43 @@
 import sys
 
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from qtpy import uic
+
 from untitled import Ui_MainWindow
+from new_untitled import Ui_Form
 from scipy.signal import get_window
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class Widget(QWidget,Ui_Form):
+    def __init__(self):
+        super().__init__()
+        self.ui=Ui_Form()
+        self.setupUi(self)
+
+        self.lineEdit.setText('512')
+        self.comboBox.setCurrentIndex(0)
+class MainWindow(QMainWindow, Ui_MainWindow, Ui_Form):
     def __init__(self):
         super().__init__()
         self.ui=Ui_MainWindow()
         self.setupUi(self)
 
+        # 实例化一个widget
+        self.widget=Widget()
+        # 点击analyse_parameter按钮，弹出widget
+        self.actionAnalyse_Parameter.triggered.connect(self.widget.show)
+
+        # 点击widget在中的apply按钮，将参数传递到主窗口
+        self.widget.pushButton.clicked.connect(self.apply)
+
         # 创建一个字典用来保存窗口的参数
         self.window={}
         self.i = 1
-
         self.plot_deafault()
-
+        self.point_num=512
+        self.combo_index=0
         # 按钮点击创建窗
         self.pushButton.clicked.connect(self.listwidget_add)
         self.pushButton_2.clicked.connect(self.listwidget_del)
@@ -29,6 +48,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 点击按钮修改窗口参数
         self.pushButton_3.clicked.connect(self.window_change)
 
+        # 让菜单栏的选项设为可勾选状态，并默认被勾选
+        self.actionTime_Domain.setCheckable(True)
+        self.actionFrequency_Domain_2.setCheckable(True)
+
+        self.actionTime_Domain.setChecked(True)
+        self.actionFrequency_Domain_2.setChecked(True)
+
+        # 点击菜单栏的选项，显示或者隐藏对应的图像
+        self.actionTime_Domain.triggered.connect(self.show_time)
+        self.actionFrequency_Domain_2.triggered.connect(self.show_freq)
+
+    def apply(self):
+        # 获取点数
+        self.point_num=int(self.widget.lineEdit.text())
+        # 获取combo选择了第几个
+        self.combo_index=self.widget.comboBox.currentIndex()
+        # 刷新图像(仅在选中窗口的情况下)
+        if self.listWidget.currentItem():
+            self.plot()
+
+    def show_time(self):
+        if self.actionTime_Domain.isChecked():
+            self.graphicsView.show()
+        else:
+            self.graphicsView.hide()
+    def show_freq(self):
+        if self.actionFrequency_Domain_2.isChecked():
+            self.graphicsView_2.show()
+        else:
+            self.graphicsView_2.hide()
 
     def create_window(self):
         # 类型和长度默认为 Hanning 和 64
@@ -80,33 +129,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 更新图像
         self.plot()
     def plot(self):
-
         window=get_window(self.window[self.window_name]['type'],int(self.window[self.window_name]['length']))
         t=np.arange(self.window[self.window_name]['length'])
+        # 计算频域
+
+        freqs = np.arange(self.point_num) / self.point_num * 2 * np.pi
+        fft_vals = np.abs(np.fft.fft(window, self.point_num)[:self.point_num])
+        freqs_normalized = freqs / np.pi
 
 
+
+        # 绘制时域图像
         self.canvas1.figure.clf()
         ax1 = self.canvas1.figure.add_subplot(111)
         ax1.grid(True)
-        ax1.plot(t,window)
+        ax1.plot(t, window)
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Amplitude')
         ax1.set_title('Time Domain')
         self.canvas1.draw()
-
-        # 计算频域
-        fft_len = 2048
-        fft_vals = np.abs(np.fft.fft(window, fft_len)[:fft_len//2])
-
-        # 创建归一化频率轴
-        freqs = np.arange(fft_len//2) / (fft_len/2) * np.pi
-        freqs_normalized = freqs / np.pi
-
+        # 绘制频域图像
         self.canvas2.figure.clf()
         ax2=self.canvas2.figure.add_subplot(111)
-        ax2.plot(freqs_normalized, 20*np.log10(fft_vals + 1e-15))
-        ax2.set_xlim([0, 1])
-        ax2.set_ylim([-100, 50])
+        ax2.plot(freqs_normalized, 20*np.log10(fft_vals + 1e-15),color='b')
+        # 画出负半轴对称图形
+        ax2.plot(-freqs_normalized, 20*np.log10(fft_vals + 1e-15),color='b')
+
+
+        if self.combo_index==0:
+            ax2.set_xlim([0, 1])
+        elif self.combo_index==1:
+            ax2.set_xlim([0, 2])
+        elif self.combo_index==2:
+            ax2.set_xlim([-1, 1])
+        ax2.set_ylim([-150, 50])
         ax2.grid(True)
         ax2.set_xlabel('Frequency')
         ax2.set_ylabel('Magnitude(dB)')
@@ -118,7 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.canvas1 = FigureCanvas(self.fig1)
         layout = QVBoxLayout()  # 垂直布局
         layout.addWidget(self.canvas1)
-        self.fig1.subplots_adjust(left=0.15, bottom=None, right=None, top=None, wspace=None, hspace=None)
+        self.fig1.subplots_adjust(left=0.2, bottom=None, right=0.9, top=None, wspace=None, hspace=None)
         self.graphicsView.setLayout(layout)  # 设置好布局之后调用函数
 
         self.fig2 = plt.figure()

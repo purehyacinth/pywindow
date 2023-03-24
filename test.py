@@ -1,23 +1,43 @@
-import numpy as np
-from scipy import signal
-import matplotlib.pyplot as plt
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QWidget
 
-# 创建一个长度为1000的Hamming窗
-window = signal.get_window('hamming', 64)
 
-# 在窗口上应用FFT并计算幅度谱
-fft_vals = np.abs(np.fft.fft(window, 2048))
+class Example(QMainWindow):
 
-# 创建归一化频率轴
-freqs = np.fft.fftfreq(2048, 1/1000)
-freqs_norm = freqs[:1024] / 500
+    def __init__(self):
+        super().__init__()
 
-# 绘制频域图像
-plt.plot(freqs_norm, 20*np.log10(fft_vals[:1024]))
-plt.xlim(0, 1)
-plt.ylim(-100,50)
-plt.xlabel('Normalized Frequency')
-plt.ylabel('Magnitude (dB)')
-plt.title('Hamming Window Frequency Response')
-plt.grid()
-plt.show()
+        self.initUI()
+
+    def initUI(self):
+        # 创建一个菜单栏
+        menubar = self.menuBar()
+
+        # 创建一个文件菜单
+        fileMenu = menubar.addMenu('文件')
+
+        # 创建一个动作
+        newAct = QAction('新建', self)
+        newAct.setShortcut('Ctrl+N')
+        newAct.setStatusTip('创建新文件')
+        newAct.triggered.connect(self.newFile)
+
+        # 将动作添加到文件菜单中
+        fileMenu.addAction(newAct)
+
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('打开新窗口')
+        self.show()
+
+    def newFile(self):
+        # 创建一个新窗口
+        new_window = QWidget()
+        new_window.setGeometry(100, 100, 200, 150)
+        new_window.setWindowTitle('新窗口')
+        new_window.show()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    sys.exit(app.exec_())

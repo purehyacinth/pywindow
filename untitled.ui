@@ -143,8 +143,44 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionTime_Domain"/>
+    <addaction name="actionFrequency_Domain_2"/>
+    <addaction name="separator"/>
+    <addaction name="actionAnalyse_Parameter"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionTime_Domain">
+   <property name="text">
+    <string>Time Domain</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Domain">
+   <property name="text">
+    <string>Frequency Domain</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Domain_2">
+   <property name="text">
+    <string>Frequency Domain</string>
+   </property>
+  </action>
+  <action name="actionAnalyse_Parameter">
+   <property name="text">
+    <string>Analyse Parameter</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
